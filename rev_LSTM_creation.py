@@ -206,7 +206,7 @@ def makeRevCSV(fname, sent_dict, output_dir):
       "_sentids.csv". No underscores may be present in the model name.
     """
     with open(output_dir + fname, "w") as f:
-        writer = csv.writer(f)
+        writer = csv.writer(f, delimiter="\037")
         writer.writerow(["model", "sentid", "sentence"])
         for sentid in sent_dict.keys():
           model = fname.split("_")[0]
