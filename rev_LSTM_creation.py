@@ -14,6 +14,18 @@ from tokenizers import (
     decoders, #5
 )
 
+## INITIALIZE VARIABLES
+random.seed(5) # set random seeed
+## Specify file names
+
+csv_file = "./data/preprocessed/babylm_sent_train.csv"
+
+csv_dir = "./data/preprocessed/"
+output_dir = "./data/lstm_reviewers/"
+
+
+
+## DEFINE FUNCTIONS
 
 def loadFromCSV(csvfname):
   """
@@ -152,71 +164,7 @@ def corpusCreation(dat_dict):
 
   return shuffled_sent_list, shuffled_sent_dict
 
-
-
-###################################################
-csv_file = "./csv_files/babylm_sent_train.csv"
-
-tokenizer = Tokenizer(models.BPE()) # tokenizer objects are intialized with a model argument which specifies the algorithm they will use for tokenization
-# GPT-2 does not use a normalizer, so we go directly pre-tokenization
-tokenizer.pre_tokenizer = pre_tokenizers.ByteLevel(add_prefix_space=False) #prevents default addition of space char at the beginning of a sentence
-
-#3 passing input to model and training tokenizer
-domain_sent_dict, domain_sentfreq_dict, domain_wordfreq_dict= loadFromCSV(csv_file)
-train = corpusCreation(domain_sent_dict)
-
-trainer = trainers.BpeTrainer(vocab_size=50272, special_tokens=["<|endoftext|>", '<image>', '</c>', '<PERSON>']) # EOS is apparently the only special token for BPE (rest based on baseline github) , set vocab size according to babyLM baseline model config val
-tokenizer.train_from_iterator(train, trainer=trainer)
-
-#4
-tokenizer.post_processor = processors.ByteLevel(trim_offsets=False)
-
-#5
-tokenizer.decoder = decoders.ByteLevel()
-
-#possibly not working
-tokenizer_dir = '/content/test_Tokenizer1.pt'
-torch.save(tokenizer, tokenizer_dir)
-##########################################################
-#straight up code
-
-
-
-############  NEEDS STREAMLINING  ############
-def createSentsFile(fname, sents, output_dir):
-    print(fname)
-    encodedSents = []
-    for sent in sents:
-        encodedSent = " ".join((tokenizer.encode(sent)).tokens)
-        encodedSents.append(encodedSent)
-    print(len(sents))
-    print(sents[0])
-    print(encodedSents[0])
-    print(sents[len(sents) -1])
-    print(encodedSents[len(sents) -1])
-    with open(output_dir + fname, "w") as f:
-        f.write('\n'.join(encodedSents))
-    return
-
-
-
-def makeRevCSV(fname, sent_dict, output_dir):
-    """
-    NOTE: takes filename as a str containing the model name followed by
-      "_sentids.csv". No underscores may be present in the model name.
-    """
-    with open(output_dir + fname, "w") as f:
-        writer = csv.writer(f)
-        writer.writerow(["model", "sentid", "sentence"])
-        for sentid in sent_dict.keys():
-          model = fname.split("_")[0]
-          row = [model, sentid, sent_dict[sentid]]
-          writer.writerow(row)
-    return
-
-
-
-def createFiles(csv_dir, output_dir, num_samples):
+def createFiles(tokenizer, csv_dir, output_dir, num_samples):
     """
     NOTE: csv_dir must contain one .csv file ending in _train and one
       .csv file ending in _dev. It may also contain a .csv file ending in _test
@@ -264,7 +212,70 @@ def createFiles(csv_dir, output_dir, num_samples):
 
     return
 
-csv_dir = "./data/preprocessed/"
-output_dir = "./data/postprocessed/"
+def createSentsFile(fname, sents, output_dir):
+    print(fname)
+    encodedSents = []
+    for sent in sents:
+        encodedSent = " ".join((tokenizer.encode(sent)).tokens)
+        encodedSents.append(encodedSent)
+    print(len(sents))
+    # print(sents[0])
+    # print(encodedSents[0])
+    # print(sents[len(sents) -1])
+    # print(encodedSents[len(sents) -1])
+    with open(output_dir + fname, "w") as f:
+        f.write('\n'.join(encodedSents))
+    return
 
-createFiles(csv_dir, output_dir, 5)
+
+
+def makeRevCSV(fname, sent_dict, output_dir):
+    """
+    NOTE: takes filename as a str containing the model name followed by
+      "_sentids.csv". No underscores may be present in the model name.
+    """
+    with open(output_dir + fname, "w") as f:
+        writer = csv.writer(f)
+        writer.writerow(["model", "sentid", "sentnum", "sentence"])
+        for i,sentid in enumerate(sent_dict.keys()):
+          model = fname.split("_")[0]
+          row = [model, sentid, i, sent_dict[sentid]]
+          writer.writerow(row)
+    return
+
+
+
+
+
+
+## TRAIN TOKENIZER
+
+
+tokenizer = Tokenizer(models.BPE()) # tokenizer objects are intialized with a model argument which specifies the algorithm they will use for tokenization
+# GPT-2 does not use a normalizer, so we go directly pre-tokenization
+tokenizer.pre_tokenizer = pre_tokenizers.ByteLevel(add_prefix_space=False) #prevents default addition of space char at the beginning of a sentence
+
+#3 passing input to model and training tokenizer
+domain_sent_dict, domain_sentfreq_dict, domain_wordfreq_dict= loadFromCSV(csv_file)
+train = corpusCreation(domain_sent_dict)
+
+trainer = trainers.BpeTrainer(vocab_size=50272, special_tokens=["<|endoftext|>", '<image>', '</c>', '<PERSON>']) # EOS is apparently the only special token for BPE (rest based on baseline github) , set vocab size according to babyLM baseline model config val
+tokenizer.train_from_iterator(train, trainer=trainer)
+
+#4
+tokenizer.post_processor = processors.ByteLevel(trim_offsets=False)
+
+#5
+tokenizer.decoder = decoders.ByteLevel()
+
+#possibly not working
+tokenizer_dir = 'BabyLM_10M_Tokenizer.pt'
+torch.save(tokenizer, tokenizer_dir)
+
+
+
+## CREATE FILES
+
+createFiles(tokenizer, csv_dir, output_dir, 5)
+
+
