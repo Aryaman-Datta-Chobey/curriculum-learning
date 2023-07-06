@@ -218,11 +218,9 @@ def createSentsFile(fname, sents, output_dir):
     for sent in sents:
         encodedSent = " ".join((tokenizer.encode(sent)).tokens)
         encodedSents.append(encodedSent)
+
     print(len(sents))
-    # print(sents[0])
-    # print(encodedSents[0])
-    # print(sents[len(sents) -1])
-    # print(encodedSents[len(sents) -1])
+
     with open(output_dir + fname, "w") as f:
         f.write('\n'.join(encodedSents))
     return
@@ -235,7 +233,7 @@ def makeRevCSV(fname, sent_dict, output_dir):
       "_sentids.csv". No underscores may be present in the model name.
     """
     with open(output_dir + fname, "w") as f:
-        writer = csv.writer(f)
+        writer = csv.writer(f, delimiter="\037")
         writer.writerow(["model", "sentid", "sentnum", "sentence"])
         for i,sentid in enumerate(sent_dict.keys()):
           model = fname.split("_")[0]
