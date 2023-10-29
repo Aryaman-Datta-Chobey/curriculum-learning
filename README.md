@@ -15,6 +15,16 @@ Setting up:
 **Step2** Migrate data generated in step1 to the azureVM folder. Run the the TrainLSTMS.ipynb to train 5 LSTM reviewer models with early stopping (the other python scripts in the folder currently use scripts from the[ neural complexity repository](https://github.com/vansky/neural-complexity))
 #### LSTM reviewer model sentence scoring 
 ![image](https://github.com/Aryaman-Datta-Chobey/curriculum-learning/assets/97906694/41c52e08-30e8-4fcf-81fb-ad01141fcf07)
+**Step3**Run the ReviewMetaSets.ipynb to generate surprisals for each training example in the trainset. (toDO , adding Rscript and documentation for sentence surprisal averaging)
+#### Curriculum Creation (TO DO)
+![image](https://github.com/Aryaman-Datta-Chobey/curriculum-learning/assets/97906694/4f6241b4-2092-49bb-a34d-867deac2c772)
+
+Create_curriculum.py and Util.py: 
+Utility functions for scripts associated with curriculum creation in the repository. Most importantly implements  function for creating  root-p curriculums as introduced by Platanios et al (2019)
+Possible issue: All code in utils.py appears to be included in create_curriculum.py ,may need to refactor one file for future use  and deprecate the other?
+
+#### Model Training (TODO)
+
 
 
  
