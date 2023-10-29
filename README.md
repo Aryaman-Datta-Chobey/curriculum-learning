@@ -25,6 +25,6 @@ Possible issue: All code in utils.py appears to be included in create_curriculum
 
 #### Model Training (TODO)
 
-
+Code Review needed : The data loading and batching component of the transformer training pipeline (found under "Get Batches (data loading)" header in the OPT125M notebook) may be unoptimized and currently slower than ideal.
 
  
